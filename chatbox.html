@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbox Simulation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+      body, html {
+        height: 100%;
+        margin: 0;
+        font-family: 'Poppins', sans-serif;
+      }
+
+      .container-fluid {
+        height: 100vh;
+        padding: 20px;
+      }
+
+      .chat-section {
+        background-color: white;
+        border-radius: 15px;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding: 15px;
+      }
+
+      .chat-messages {
+        background-color: #f4f6f9;
+        overflow-y: auto;
+        border-radius: 15px;
+        flex-grow: 1;
+        padding: 15px;
+        max-height: calc(100vh - 150px);
+      }
+
+      .message {
+        display: flex;
+        align-items: flex-end;
+        margin-bottom: 15px;
+      }
+
+      /* Question (left) styling */
+      .message.question {
+        justify-content: flex-start;
+      }
+
+      .message.question .message-content {
+        background-color: #e9ecef;
+        color: black;
+      }
+
+      /* Answer (right) styling */
+      .message.answer {
+        justify-content: flex-end;
+      }
+
+      .message.answer .message-content {
+        background-color: #007bff;
+        color: white;
+      }
+
+      .message-content {
+        max-width: 60%;
+        padding: 10px;
+        border-radius: 20px;
+      }
+
+      .message-content p {
+        margin-bottom: 0;
+      }
+
+      .message img {
+        border-radius: 50%;
+        margin-left: 10px;
+      }
+
+      /* Timestamp styling */
+      .message-content small {
+        display: block;
+        text-align: right;
+        color: #666;
+        margin-top: 5px;
+      }
+
+      /* Message input area styling */
+      .input-group {
+        margin-top: 15px;
+      }
+
+      .input-group textarea {
+        resize: none;
+        border-radius: 20px;
+      }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid h-100">
+  <div class="row h-100 justify-content-center">
+    <!-- Chat Section (Messages in the Center) -->
+    <div class="col-md-8 col-sm-12 p-3">
+      <div class="chat-section rounded shadow-sm">
+        <div id="chatMessages" class="chat-messages overflow-auto">
+          <!-- Placeholder for messages -->
+        </div>
+        <!-- Message Input -->
+        <div class="p-3 bg-light rounded">
+          <div class="input-group">
+            <textarea id="chatInput" class="form-control" rows="1" placeholder="Type your answer here..."></textarea>
+            <button class="btn btn-primary" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let questions = [];
+  let currentQuestionIndex = 0;
+  let userName = '';
+  let userImage = '';
+
+  // Load questions, name, and image from localStorage
+  window.onload = function() {
+    const storedQuestions = localStorage.getItem('questions');
+    const storedName = localStorage.getItem('userName');
+    const storedImage = localStorage.getItem('userImage');
+
+    if (storedQuestions) {
+      questions = JSON.parse(storedQuestions);
+    } else {
+      document.getElementById('chatMessages').innerHTML = '<div class="message mb-3">No questions found.</div>';
+      return;
+    }
+
+    userName = storedName || 'Anonymous';
+    userImage = storedImage || 'img/default-profile.jpg';
+
+    displayQuestion();
+  }
+
+  // Function to display the current question
+  function displayQuestion() {
+    if (currentQuestionIndex < questions.length) {
+      const chatMessages = document.getElementById('chatMessages');
+      const currentTime = new Date();
+      const hours = currentTime.getHours();
+      const minutes = currentTime.getMinutes().toString().padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const formattedTime = `${hours % 12 || 12}:${minutes} ${ampm}`;
+
+      // Add question element
+      const questionElement = `
+        <div class="message question mb-3 d-flex">
+          <div class="message-content">
+            <p><strong>${userName}:</strong> ${questions[currentQuestionIndex].question}</p>
+            <small class="text-muted">${formattedTime}</small>
+          </div>
+        </div>
+      `;
+      chatMessages.insertAdjacentHTML('beforeend', questionElement);
+      
+      // Scroll to the bottom
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    } else {
+      // If there are no more questions, you can show a message or end the process
+      const endMessage = `<div class="message mb-3">You have answered all the questions!</div>`;
+      document.getElementById('chatMessages').insertAdjacentHTML('beforeend', endMessage);
+    }
+  }
+
+  // Send answer and move to the next question
+  function sendMessage() {
+    const chatInput = document.getElementById('chatInput');
+    const messageText = chatInput.value.trim();
+
+    if (messageText !== "") {
+      const chatMessages = document.getElementById('chatMessages');
+      
+      // Get current time
+      const currentTime = new Date();
+      const hours = currentTime.getHours();
+      const minutes = currentTime.getMinutes().toString().padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const formattedTime = `${hours % 12 || 12}:${minutes} ${ampm}`;
+
+      // Add answer element
+      const answerElement = `
+        <div class="message answer mb-3 d-flex">
+          <div class="message-content">
+            <p>${messageText}</p>
+            <small class="text-light">${formattedTime}</small>
+          </div>
+          <img src="${userImage}" class="rounded-circle" alt="${userName}" width="40" height="40">
+        </div>
+      `;
+      chatMessages.insertAdjacentHTML('beforeend', answerElement);
+
+      // Move to the next question
+      currentQuestionIndex++;
+      displayQuestion();
+
+      // Clear input field
+      chatInput.value = '';
+    }
+  }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

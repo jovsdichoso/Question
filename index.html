@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ask Yourself Multiple Questions</title>
+    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+            color: #495057;
+        }
+
+        .container {
+            max-width: 600px;
+            margin-top: 50px;
+        }
+
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-control {
+            border-radius: 10px;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-secondary, .btn-primary {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            border: none;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .alert {
+            border-radius: 10px;
+        }
+
+        .custom-image-preview {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 2px solid #007bff;
+        }
+
+        .image-upload {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .image-upload input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header shadow-lg">
+            <h1 class="mb-0">Ask Yourself Multiple Questions</h1>
+        </div>
+
+        <div class="mt-4">
+            <label for="name" class="form-label">Your Name</label>
+            <input type="text" class="form-control" id="name" placeholder="Enter your name">
+
+            <label for="image" class="form-label mt-3">Your Image</label>
+            <div class="image-upload">
+                <img id="imagePreview" class="custom-image-preview" src="https://via.placeholder.com/100" alt="Image Preview">
+                <input type="file" id="image" accept="image/*" onchange="previewImage()">
+            </div>
+
+            <label for="question" class="form-label mt-3">Enter Your Questions</label>
+            <textarea class="form-control" id="question" rows="3" placeholder="Type your question here..."></textarea>
+        </div>
+
+        <div class="mt-3">
+            <button class="btn btn-secondary" onclick="addQuestion()">Add Another Question</button>
+            <button class="btn btn-primary mt-2" onclick="finishQuestions()">Finish and Start Answering</button>
+        </div>
+
+        <div id="alertContainer" class="mt-3"></div>
+    </div>
+
+    <script>
+        let questions = [];
+
+        function addQuestion() {
+            const nameInput = document.getElementById('name');
+            const imageInput = document.getElementById('image');
+            const questionInput = document.getElementById('question');
+            const name = nameInput.value.trim();
+            const questionText = questionInput.value.trim();
+            const alertContainer = document.getElementById('alertContainer');
+
+            if (name === "") {
+                showAlert('Please enter your name.', 'danger');
+                return;
+            }
+
+            if (questionText !== "") {
+                questions.push({
+                    name: name,
+                    image: imageInput.files.length > 0 ? URL.createObjectURL(imageInput.files[0]) : 'https://via.placeholder.com/40',
+                    question: questionText
+                });
+                questionInput.value = ""; // Clear input
+                showAlert('Question added! Add another or finish.', 'success');
+            } else {
+                showAlert('Please enter a question.', 'danger');
+            }
+        }
+
+        function finishQuestions() {
+            if (questions.length > 0) {
+                // Store questions array in localStorage
+                localStorage.setItem('questions', JSON.stringify(questions));
+
+                // Redirect to chatbox.html
+                window.location.href = 'chatbox.html';
+            } else {
+                showAlert('Please add at least one question.', 'danger');
+            }
+        }
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+        }
+
+        function previewImage() {
+            const imageInput = document.getElementById('image');
+            const imagePreview = document.getElementById('imagePreview');
+
+            if (imageInput.files && imageInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    imagePreview.src = e.target.result;
+                }
+                reader.readAsDataURL(imageInput.files[0]);
+            }
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
